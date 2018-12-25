@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BES xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="BES.xsd">
+	<Analysis>
+		<Title>EAGLTPC0L9SK7</Title>
+		<Description><![CDATA[&lt;enter a description of the analysis here&gt; ]]></Description>
+		<GroupRelevance JoinByIntersection="false">
+			<SearchComponentPropertyReference PropertyName="Computer Name" Comparison="Equals">
+				<SearchText>EAGLTPC0L9SK7</SearchText>
+				<Relevance>exists (computer name) whose (it as string as lowercase = "EAGLTPC0L9SK7" as lowercase)</Relevance>
+			</SearchComponentPropertyReference>
+		</GroupRelevance>
+		<Source>Internal</Source>
+		<SourceReleaseDate>2018-05-07</SourceReleaseDate>
+		<MIMEField>
+			<Name>x-fixlet-modification-time</Name>
+			<Value>Mon, 07 May 2018 14:31:45 +0000</Value>
+		</MIMEField>
+		<Domain>BESC</Domain>
+		<Property Name="Autoconfig" ID="1" EvaluationPeriod="PT5M">value "AutoconfigURL" of key "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings" of native registry</Property>
+		<Property Name="ProxyEnable " ID="2" EvaluationPeriod="PT5M">value "ProxyEnable" of key "HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings" of native registry</Property>
+	</Analysis>
+</BES>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BES xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="BES.xsd">
+	<Analysis>
+		<Title>ITM_Agent_Analysis</Title>
+		<Description><![CDATA[&lt;enter a description of the analysis here&gt; ]]></Description>
+		<GroupRelevance JoinByIntersection="false">
+			<SearchComponentGroupReference GroupName="ITM_Prod_notreporting" Comparison="IsMember"></SearchComponentGroupReference>
+		</GroupRelevance>
+		<Source>Internal</Source>
+		<SourceReleaseDate>2018-11-22</SourceReleaseDate>
+		<MIMEField>
+			<Name>x-fixlet-modification-time</Name>
+			<Value>Thu, 22 Nov 2018 09:11:30 +0000</Value>
+		</MIMEField>
+		<Domain>BESC</Domain>
+		<Property Name="Monitoring Agent for Windows OS - Primary" ID="1" EvaluationPeriod="PT0S">if (exists service "KNTCMA_Primary") then (state of service "CarbonBlack") else"Not Installed"</Property>
+		<Property Name="Monitoring Agent for Windows OS - Watchdog" ID="2">if (exists service "KNTCMA_Watchdog") then (state of service "KNTCMA_Watchdog") else "Not Installed"</Property>
+		<Property Name="Monitoring Agent for GSMA BlueCARE Windows OS - Primary" ID="3">if (exists service "K06CMA") then (state of service "K06CMA") else "Not Installed"</Property>
+		<Property Name="Files - klzagent" ID="4" EvaluationPeriod="PT5M">If (exists file "/opt/IBM/ITM/lx8266/lz/bin/klzagent") then "klzagent" else "No"</Property>
+		<Property Name="Files - k08agent" ID="5" EvaluationPeriod="PT5M">If (exists file "/opt/IBM/ITM/lx8266/08/bin/k08agent") then "k08agent" else "No"</Property>
+		<Property Name="process - klzagent" ID="6" EvaluationPeriod="PT5M">if (exists service "klzagent") then (if (exists process "klzagent") then "Running" else "Stopped") else "No service"</Property>
+		<Property Name="process - k08agent" ID="7" EvaluationPeriod="PT5M">if (exists service "k08agent") then (if (exists process "k08agent") then "Running" else "Stopped") else "No service"</Property>
+	</Analysis>
+</BES>

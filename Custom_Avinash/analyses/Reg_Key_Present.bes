@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BES xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="BES.xsd">
+	<Analysis>
+		<Title>Reg_Key_Present</Title>
+		<Description><![CDATA[<P>This Analysis is&nbsp; Under Testing Please contact Venkata Avinash for Clarification</P>
+<P>Email : t.avinash@in.ibm.com</P>]]></Description>
+		<GroupRelevance JoinByIntersection="false">
+			<SearchComponentPropertyReference PropertyName="Computer Name" Comparison="Contains">
+				<SearchText>EYLTPK327P6</SearchText>
+				<Relevance>exists (computer name) whose (it as string as lowercase contains "EYLTPK327P6" as lowercase)</Relevance>
+			</SearchComponentPropertyReference>
+		</GroupRelevance>
+		<Source>Internal</Source>
+		<SourceReleaseDate>2018-05-08</SourceReleaseDate>
+		<MIMEField>
+			<Name>x-fixlet-modification-time</Name>
+			<Value>Tue, 08 May 2018 07:17:21 +0000</Value>
+		</MIMEField>
+		<Domain>BESC</Domain>
+		<Property Name="Reg_Key" ID="1">(exists keys "SOFTWARE\Microsoft\Windows\CurrentVersion\Internet Settings" of keys whose(exists key "Software\Microsoft\Windows\CurrentVersion\Run" of it) of key "HKEY_USERS" of native registry)</Property>
+	</Analysis>
+</BES>

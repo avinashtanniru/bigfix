@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BES xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="BES.xsd">
+	<Analysis>
+		<Title>Symantec Endpoint Protection</Title>
+		<Description><![CDATA[<DIV class=subsection>
+<P>This Analysis will give the information about the service and file status for CarbonBlack Deployment</P>
+<P>&nbsp;</P>
+<P>Developed By : <STRONG>Venkata Avinash Tanniru</STRONG></P>
+<P>Email : <A href="mailto:t.avinash@in.ibm.com"><FONT color=#0066cc>t.avinash@in.ibm.com</FONT></A></P></DIV>]]></Description>
+		<Relevance>true</Relevance>
+		<Source>Internal</Source>
+		<SourceReleaseDate>2018-08-09</SourceReleaseDate>
+		<MIMEField>
+			<Name>x-fixlet-modification-time</Name>
+			<Value>Thu, 09 Aug 2018 13:14:03 +0000</Value>
+		</MIMEField>
+		<Domain>BESC</Domain>
+		<Property Name="Service" ID="1">if (exists service "SepMasterService") then "Yes" else if (exists service "smcd") then "Yes" else "No"</Property>
+	</Analysis>
+</BES>

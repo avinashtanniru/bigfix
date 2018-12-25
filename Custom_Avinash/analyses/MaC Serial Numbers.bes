@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BES xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="BES.xsd">
+	<Analysis>
+		<Title>MaC Serial Numbers</Title>
+		<Description><![CDATA[&lt;enter a description of the analysis here&gt; ]]></Description>
+		<GroupRelevance JoinByIntersection="false">
+			<SearchComponentPropertyReference PropertyName="OS" Comparison="Contains">
+				<SearchText>MAC</SearchText>
+				<Relevance>exists (operating system) whose (it as string as lowercase contains "MAC" as lowercase)</Relevance>
+			</SearchComponentPropertyReference>
+		</GroupRelevance>
+		<Source>Internal</Source>
+		<SourceReleaseDate>2018-08-29</SourceReleaseDate>
+		<MIMEField>
+			<Name>x-fixlet-modification-time</Name>
+			<Value>Wed, 29 Aug 2018 05:38:28 +0000</Value>
+		</MIMEField>
+		<Domain>BESC</Domain>
+		<Property Name="HW Serial Numer" ID="1">string "IOPlatformSerialNumber" of dictionary of service plane of iokit registry</Property>
+	</Analysis>
+</BES>

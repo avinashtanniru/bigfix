@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BES xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="BES.xsd">
+	<Task>
+		<Title>Linux-Syslog-Configration</Title>
+		<Description><![CDATA[&lt;enter a description of the task here&gt; ]]></Description>
+		<GroupRelevance JoinByIntersection="true">
+			<SearchComponentPropertyReference PropertyName="OS" Comparison="Contains">
+				<SearchText>Lin</SearchText>
+				<Relevance>exists (operating system) whose (it as string as lowercase contains "Lin" as lowercase)</Relevance>
+			</SearchComponentPropertyReference>
+			<SearchComponentRelevance Comparison="IsTrue">
+				<Relevance>exists file "/etc/rsyslog.conf"</Relevance>
+			</SearchComponentRelevance>
+			<SearchComponentRelevance Comparison="IsTrue">
+				<Relevance>not exists line whose (it as lowercase contains "172.22.128.205") of file "/etc/rsyslog.conf"</Relevance>
+			</SearchComponentRelevance>
+		</GroupRelevance>
+		<Category></Category>
+		<Source>Internal</Source>
+		<SourceID></SourceID>
+		<SourceReleaseDate>2018-10-14</SourceReleaseDate>
+		<SourceSeverity></SourceSeverity>
+		<CVENames></CVENames>
+		<SANSID></SANSID>
+		<MIMEField>
+			<Name>x-fixlet-modification-time</Name>
+			<Value>Thu, 01 Nov 2018 10:35:14 +0000</Value>
+		</MIMEField>
+		<Domain>BESC</Domain>
+		<DefaultAction ID="Action1">
+			<Description>
+				<PreLink>Click </PreLink>
+				<Link>here</Link>
+				<PostLink> to deploy this action.</PostLink>
+			</Description>
+			<ActionScript MIMEType="application/x-Fixlet-Windows-Shell"><![CDATA[if {exists file "/etc/rsyslog.conf"}
+//delete __appendfile
+//appendfile {concatenation "%0a%0d" of lines of file "/etc/rsyslog.conf"}
+//appendfile *.* @172.22.128.205:514
+//delete /etc/rsyslog.conf
+//copy __appendfile /etc/rsyslog.conf
+
+wait sh -c "rm -f /etc/rsyslog.conf.bkp"
+wait sh -c "rm -f /tmp/rsyslog-append.sh"
+wait sh -c "cp /etc/rsyslog.conf /etc/rsyslog.conf.bkp"
+delete __appendfile
+appendfile #!/bin/sh
+appendfile echo "*.* @172.22.128.205:514" >> /etc/rsyslog.conf
+copy __appendfile /tmp/rsyslog-append.sh
+wait chmod 775 /tmp/rsyslog-append.sh
+wait /bin/sh -C /tmp/rsyslog-append.sh
+
+
+else
+endif
+if {name of operating system as lowercase starts with "linux red hat enterprise server 6"}
+wait sh -c "service rsyslog restart"
+elseif {name of operating system as lowercase starts with "linux red hat enterprise server 7"}
+wait sh -c "systemctl restart rsyslog"
+endif
+]]></ActionScript>
+		</DefaultAction>
+	</Task>
+</BES>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BES xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="BES.xsd">
+	<Task>
+		<Title><![CDATA[Username & Home Directory - Linux]]></Title>
+		<Description><![CDATA[&lt;enter a description of the task here&gt; ]]></Description>
+		<GroupRelevance JoinByIntersection="true">
+			<SearchComponentRelevance Comparison="IsTrue">
+				<Relevance>(exists folder "/tmp") and (not exists file "/tmp/passwdinfo.txt")</Relevance>
+			</SearchComponentRelevance>
+			<SearchComponentPropertyReference PropertyName="OS" Comparison="Contains">
+				<SearchText>Linux</SearchText>
+				<Relevance>exists (operating system) whose (it as string as lowercase contains "Linux" as lowercase)</Relevance>
+			</SearchComponentPropertyReference>
+		</GroupRelevance>
+		<Category></Category>
+		<Source>Internal</Source>
+		<SourceID></SourceID>
+		<SourceReleaseDate>2018-10-21</SourceReleaseDate>
+		<SourceSeverity></SourceSeverity>
+		<CVENames></CVENames>
+		<SANSID></SANSID>
+		<MIMEField>
+			<Name>x-fixlet-modification-time</Name>
+			<Value>Thu, 25 Oct 2018 10:17:18 +0000</Value>
+		</MIMEField>
+		<Domain>BESC</Domain>
+		<DefaultAction ID="Action1">
+			<Description>
+				<PreLink>Click </PreLink>
+				<Link>here</Link>
+				<PostLink> to deploy this action.</PostLink>
+			</Description>
+			<ActionScript MIMEType="application/x-sh"><![CDATA[#!/bin/sh
+rm -f /tmp/passwdinfo.txt
+getent passwd {0..65535} | cut -d: -f1,7 |grep -v 'nologin\|false' >> /tmp/passwdinfo.txt]]></ActionScript>
+		</DefaultAction>
+	</Task>
+</BES>

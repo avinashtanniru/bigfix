@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BES xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="BES.xsd">
+	<Analysis>
+		<Title>Carbon Black Report</Title>
+		<Description><![CDATA[<P>This Analysis will give the information about the service and file status for CarbonBlack Deployment</P>
+<P>&nbsp;</P>
+<P>Developed By : <STRONG>Venkata Avinash Tanniru</STRONG></P>
+<P>Email : <A href="mailto:t.avinash@in.ibm.com">t.avinash@in.ibm.com</A></P>]]></Description>
+		<Relevance>true</Relevance>
+		<Source>Internal</Source>
+		<SourceReleaseDate>2018-07-19</SourceReleaseDate>
+		<MIMEField>
+			<Name>x-fixlet-modification-time</Name>
+			<Value>Thu, 16 Aug 2018 07:59:11 +0000</Value>
+		</MIMEField>
+		<Domain>BESC</Domain>
+		<Property Name="Service" ID="6" EvaluationPeriod="PT0S">if (exists service "CarbonBlack") then "Yes" else if (exists service "cbdaemon") then "Yes" else "No"</Property>
+		<Property Name="Files" ID="7" EvaluationPeriod="PT0S">If (exists file "C:\Windows\CarbonBlack\cb.exe") then "Yes" else if (exists file "/usr/sbin/cbdaemon") then "Yes" else "No"</Property>
+		<Property Name="Status" ID="8">if (exists service "CarbonBlack") then (state of service "CarbonBlack") else if (exists service "cbdaemon") then (if (exists process "cbdaemon") then "Running" else "Stopped") else "Not Installed"</Property>
+	</Analysis>
+</BES>

@@ -1,0 +1,1596 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BES xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="BES.xsd">
+	<Baseline>
+		<Title>Run_Linux_SSH_Remediation_V1</Title>
+		<Description><![CDATA[<P>This Baseline Will check the SSH Remediation</P>
+<P>Developed : Venkata Avinash Tanniru</P>]]></Description>
+		<GroupRelevance JoinByIntersection="true">
+			<SearchComponentPropertyReference PropertyName="OS" Comparison="Contains">
+				<SearchText>Linux</SearchText>
+				<Relevance>exists (operating system) whose (it as string as lowercase contains "Linux" as lowercase)</Relevance>
+			</SearchComponentPropertyReference>
+			<SearchComponentPropertyReference PropertyName="C_CODE" Comparison="DoesNotContain">
+				<SearchText>F060</SearchText>
+				<Relevance>not exists (if exist values of settings "C_CODE" of client then value of setting "C_CODE" of client else error "not set") whose (it as string as lowercase contains "F060" as lowercase)</Relevance>
+			</SearchComponentPropertyReference>
+		</GroupRelevance>
+		<Category></Category>
+		<Source></Source>
+		<SourceID></SourceID>
+		<SourceSeverity></SourceSeverity>
+		<CVENames></CVENames>
+		<SANSID></SANSID>
+		<MIMEField>
+			<Name>x-fixlet-modification-time</Name>
+			<Value>Tue, 18 Dec 2018 10:17:41 +0000</Value>
+		</MIMEField>
+		<Domain>BESC</Domain>
+		<BaselineComponentCollection>
+			<BaselineComponentGroup>
+				<BaselineComponent Name="Run_Linux_SSH_Remediation_V1" IncludeInRelevance="false" SourceSiteURL="http://EAWVOW0005-PBSP.mglbigfix.com:52311/cgi-bin/bfgather.exe/actionsite" SourceID="1790049" ActionName="Action1">
+					<ActionScript MIMEType="application/x-Fixlet-Windows-Shell"><![CDATA[// ---------------------------------------------EDITING INSTRUCTIONS---------------------------------------------------------------------
+// When editing this task through the Manage Software Distribution Packages dashboard, you will have the option to preserve any custom edits you make to this action.
+// If you select the option to preserve custom edits, only areas bound by the comment markers 'Preparation Marker', 'Command Marker' and 'Closing Marker' are updated.
+// To ensure that all your custom Action Script changes can be preserved, only make changes to areas that are not bound by the comment markers.
+// Removing the comment markers may result in the Action Script not updating correctly during the next edit.
+// See KB Article swg21668807 (http://www-01.ibm.com/support/docview.wss?uid=swg21668807) for more information.
+// --------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+//**Begin Preparation Marker
+// Download all specified files
+begin prefetch block
+  add prefetch item name=D18F924FEB9684C625621FD3C92DD03844258BC6 sha1=d18f924feb9684c625621fd3c92dd03844258bc6 size=131164 url=SWDProtocol://127.0.0.1:52311/Uploads/D18F924FEB9684C625621FD3C92DD03844258BC6/master-SSH.bfswd sha256=24eb6b37606573b21dfb8a879c739179598d3ee512fd750b5efd9a09ba81339a
+end prefetch block
+
+// All SWD files will go into a folder in the clients __BESData folder. This folder gets cleared on every restart.
+parameter "baseFolder" =  "__Download/"
+// Move files into subfolders and unescape file names
+move "__Download/D18F924FEB9684C625621FD3C92DD03844258BC6" "{parameter "baseFolder"}master-SSH" 
+
+// Log setup
+parameter "mainSWDLogFolder" = "{parent folder of client folder of current site}/__Global/SWDDeployData"
+folder create "{parameter "mainSWDLogFolder"}"
+parameter "logFile" = "SWD_DeploymentResults.log"
+
+//**End Preparation Marker
+delete __createfile
+if {name of operating system as lowercase starts with "win"}
+parameter "logFolder" = "{parameter "mainSWDLogFolder"}"
+// Run setup process
+delete run.bat
+
+// Use .bat to set working directory to packages root, for setup command.
+createfile until _end_
+@ECHO OFF
+cd "{parameter "baseFolder"}"
+rem // See comments at the beginning of this action for an explanation of the comment markers.
+echo %DATE% %TIME% >> "{parameter "logFolder"}\{parameter "logFile"}"
+echo Action ID: {id of active action} >> "{parameter "logFolder"}\{parameter "logFile"}"
+rem //**Begin Command Marker
+echo Command: sh master-SSH.sh >> "{parameter "logFolder"}\{parameter "logFile"}"
+set errorlevel=
+sh master-SSH.sh >> "{parameter "logFolder"}\{parameter "logFile"}" 2>&1
+set SWDExitCode=%errorlevel%
+rem //**End Command Marker
+
+echo Return code: %SWDExitCode% >> "{parameter "logFolder"}\{parameter "logFile"}"
+echo. >> "{parameter "logFolder"}\{parameter "logFile"}"
+exit %SWDExitCode%
+_end_
+
+move __createfile run.bat
+// You will not be able to stop or take action on an applicable BigFix Client until your installer completes.
+// So ensure no user input is required.
+// If your package absolutely must interact with the user, replace 'override wait' with 'override run' and 'wait' with 'run'.
+override wait
+hidden=true
+completion=job
+wait run.bat
+
+else
+parameter "logFolder" = "{parameter "mainSWDLogFolder"}"
+// Run setup process
+delete	run.sh
+
+// Use run.sh to set working directory to package root, for setup command.
+createfile until _end_
+#!/bin/sh
+cd "{parameter "baseFolder"}"
+
+# // See comments at the beginning of this action for an explanation of the comment markers.
+echo ActionId: {id of active action} >> "{parameter "logFolder"}/{parameter "logFile"}" 2>&1 
+echo DateTime: {now} >> "{parameter "logFolder"}/{parameter "logFile"}" 2>&1 
+# //**Begin Command Marker
+echo Command: sh master-SSH.sh >> "{parameter "logFolder"}/{parameter "logFile"}"
+mv master-SSH master-SSH.sh
+chmod +x master-SSH.sh
+sh master-SSH.sh >> "{parameter "logFolder"}/{parameter "logFile"}" 2>&1
+SWDExitCode=$?
+# //**End Command Marker
+
+echo Return code: $SWDExitCode >> "{parameter "logFolder"}/{parameter "logFile"}"
+echo >> "{parameter "logFolder"}/{parameter "logFile"}"
+exit $SWDExitCode
+_end_
+
+move __createfile run.sh
+
+// You will not be able to stop or take action on an applicable BigFix Client until your installer completes.
+// So ensure no user input is required.
+wait chmod 555 run.sh
+wait ./run.sh
+endif
+
+//**Begin Closing Marker
+// Get the return code of the previous action.
+parameter "returnCode" = "{exit code of action}"
+
+// Task will now exit.
+exit {parameter "returnCode"}
+//**End Closing Marker]]></ActionScript>
+					<SuccessCriteria Option="RunToCompletion"></SuccessCriteria>
+					<Relevance><![CDATA[(version of client >= "6.0.0.0") AND ((exists true whose (if true then (exists (operating system) whose (it as string as lowercase contains "Linux" as lowercase)) else false)) AND (exists true whose (if true then (not exists (if exist values of settings "C_CODE" of client then value of setting "C_CODE" of client else error "not set") whose (it as string as lowercase contains "F060" as lowercase)) else false)))]]></Relevance>
+				</BaselineComponent>
+				<BaselineComponent Name="GTS_Upload_Manager_Execution_Universal_Avinash" IncludeInRelevance="false" SourceSiteURL="http://EAWVOW0005-PBSP.mglbigfix.com:52311/cgi-bin/bfgather.exe/actionsite" SourceID="1768361" ActionName="Action1">
+					<ActionScript MIMEType="application/x-Fixlet-Windows-Shell"><![CDATA[// **********************************************************************************
+// UNIVERSAL UPLOADER
+// Version: 2.17
+// Upload files for URT, SCM, RBkA, SSS and Logs (Client, CDS/ESD and GCM)
+// AUTHORS - Mickel van der Vegt, Ashish Mishra, Mike Spisak
+// **********************************************************************************
+//
+// Version 2.17
+//		- Removed “BACKUP SETTINGS” routine so environment is not inherited from outside Universal Uploader 
+//      - Removed “BEGIN SETTING RESTORATION” routine so environment enforced by UU is also kept outside UU 
+//      - All statements that delete Fileset are removed
+//      - All statements which define Fileset as “empty” are removed
+//      - OperatingMode is set as 0 to disable the “archive now” funtion 
+// Version 2.16
+//		- Enhanced logging is implemented where uploaded filenames are logged in the log file
+//		- Added uploads for SAT Transport
+//      - Fixed an issue which occurs when c_code was not set in the endpoint
+//      - Removed references to EPR and WINPATCH
+//
+// Version 2.15 
+//		- GCM Healthcheck log files uploaded
+//      - Removed references for TLOG and TSCM
+//      - Corrected relevance of 24hr check before GCMRemote.zip deletion
+//
+// Version 2.14
+//		- GCM remote execution data files are uploaded. See GCMR section
+//
+// version 2.13 
+//      - EPR patch data will be going to EPR folder inside __GTS folder.
+//			So process to move the files from old paths are not required. 
+//
+// version 2.12 
+//      - Create GTS home if it does not exists. If a file exists with name end with "_subs.all.sss" then SSS fileset
+//			should become "*_subs.all.sss"
+//
+// version 2.11 
+//      - Update EPR patch folder.
+//
+// version 2.10
+//      - Added uploads for UIDEXT (Global UID Extractors)
+//
+// version 2.9
+//      - fixed issue of unwanted SRM data collection. SRM data is now collected only when  SRM_Code is set.
+//
+// version 2.8
+//		- Added uploads for HWSW currency and SAT data
+//
+// version 2.7
+//		- fixed SRM UNIX to not move files older than 7 days
+//
+// version 2.6
+//		- fixed a bug with double quotes in the SRM registry path key (windows)
+//
+// version 2.5
+//		- fixed a bug where some services are on different drive letters from IEM agent
+//
+// version 2.4
+//		- fixed a bug by which SRM data was repeatedly getting uploaded
+//		- fixed bug on MaxArchiveSize (increased)
+//		- added uploads for Windows secondary patch scan
+//		- added uploads for Oracle license scan
+//
+// version 2.3
+//		- created a UU log file for troubleshooting and reporting
+//		- changed data location folder on client. 
+//		- made it compatible with IEM 9.
+//
+// version 2.2
+//		- added loop script to detect old SRM files
+//		- more native usage of AS vs. platform specific commands
+//		- added collection of staged ESD/CDS log files
+//		- added clean up of old URT files > 30 hours old
+//
+// version 2.1
+//		- fixed logical if error in backup section
+// 		- fixed NLOG type-o bug
+//		- fixed backup relevance bug
+//
+// version 2.0
+//		- fixed missing endif bug
+//
+// **********************************************************************************
+
+// setting parametr c_code and srm_code 
+//if {not exists values whose (length of (it as string) > 0) of settings whose (name of it as lowercase = "c_code") of client}
+//	setting "C_Code"="DED" on "{now}" for client
+//endif
+
+parameter "c_code"="{if(exists settings whose (name of it as lowercase = "c_code" AND exists values whose (length of (it as string) > 0) of it) of client)then(value of setting whose (name of it as lowercase = "c_code") of client)else("DED")}"
+parameter "srm_code"="{if(exists settings whose (name of it as lowercase = "srm_code" AND exists values whose (length of (it as string) > 0) of it) of client)then(value of setting whose (name of it as lowercase = "srm_code") of client)else("")}"
+
+//Version of the UU task
+parameter "UU_Version" = "2.17"
+
+// Application Specific Folder Definitions
+if {version of client >= "9.0"}
+    parameter "GTS_HOME" = "{pathname of parent folder of data folder of client}/__GTS"
+else 
+    if {name of operating system as lowercase starts with "win"}
+        parameter "GTS_HOME" = "{pathname of parent folder of client}/__GTS"
+	else 
+	    parameter "GTS_HOME" = "{pathname of parent folder of file (value of variable "BESClientConfigPath" of environment)}/__GTS"
+    endif
+endif
+
+// Create GTS HOME if it does not exists
+if {not exists folder (parameter "GTS_HOME")} 
+    folder create "{parameter "GTS_HOME"}" 
+endif 
+
+parameter "CLIENT_HOME" = "{(parameter "GTS_HOME") & "/CLIENT"}"
+parameter "PROFILE_HOME" = "{(parameter "GTS_HOME") & "/PROFILE"}"
+parameter "URT_HOME" = "{(parameter "GTS_HOME") & "/URT"}"
+parameter "UIDEXT_HOME" = "{(parameter "GTS_HOME") & "/__UIDEXT"}"
+parameter "SSS_HOME" = "{(parameter "GTS_HOME") & "/SSS"}"
+parameter "ESD_HOME" = "{(parameter "GTS_HOME") & "/ESD"}"
+parameter "ORC_HOME" = "{(parameter "GTS_HOME") & "/ORC"}"
+parameter "HWSW_HOME" = "{(parameter "GTS_HOME") & "/HWSWCurrency"}"
+parameter "SAT_HOME" = "{(parameter "GTS_HOME") & "/SAT"}"
+parameter "GCM_HOME" = "{(parameter "GTS_HOME")&"/__IEMHC"}"
+parameter "GCMR_HOME" = "{(parameter "GCM_HOME")&"/GCMremote"}"
+parameter "LINSHC_HOME" = "/tmp"
+
+//********************************
+// Added v2.3 UU Log File Setup
+parameter "UU_log_filename" = "universal_uploader.{((month of it as two digits & "_" & day_of_month of it as string & "_" & year of it as string) of dates (local time zone) of it) of (now)}.log"
+if {name of operating system as lowercase starts with "win"}
+	parameter "UU_log" = "{(parameter "GTS_HOME") & "\" & (parameter "UU_log_filename")}"
+else
+	parameter "UU_log" = "{(parameter "GTS_HOME") & "/" & (parameter "UU_log_filename")}"
+endif
+
+// initiate log...
+parameter "UU_log_Text001" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: UU version {(parameter "UU_Version")} Start"
+if {name of operating system as lowercase starts with "win"}
+	waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "UU_log_Text001")} >> "{(parameter "UU_log")}"
+else
+	wait /bin/sh -c "echo {(parameter "UU_log_Text001")} >> {(parameter "UU_log")}"
+endif
+
+// Clean up (remove old universal_uploader log files from GTS directory)
+if {exists (find files "universal_uploader.*.log" whose (now - modification time of it > 7 * day) of folders (parameter "GTS_HOME"))}
+	parameter "UUlogcleanup_Text001" = "UUlogCleanup: Following files are found for cleanup"
+	if {name of operating system as lowercase does not start with "win"}
+		// Process UNIX
+		wait /bin/sh -c "echo {(parameter "UUlogcleanup_Text001")} >> {(parameter "UU_log")}"
+		wait /bin/sh -c "find {parameter "GTS_HOME"}/ -name 'universal_uploader.*.log' -type f -mtime +7 -exec ls -ls {{} \; >> {(parameter "UU_log")}"
+		
+		// Remove any old universal_uploader.*.log files.  Find files that are older than 7 days, and rm ..note the escaped brackets.
+		wait /bin/sh -c "find {parameter "GTS_HOME"}/ -name 'universal_uploader.*.log' -type f -mtime +7 -exec rm -f {{} \;"
+	else
+		// Process WINDOWS		
+
+		// Remove older universal_uploader.*.log files.  This needs to be done via batch script so we only delete files older than 7 days.
+		createfile until end-remove-UUlog
+@echo off
+
+setlocal EnableDelayedExpansion
+
+{preceding texts of firsts "\" of (parameter "GTS_HOME")}
+cd "{parameter "GTS_HOME"}"
+
+echo "UUlogCleanup: Following files will be removed during clean up" >> "{(parameter "UU_log")}"
+forfiles /P . /M universal_uploader.*.log /D -7 /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+
+forfiles /P . /M universal_uploader.*.log /D -7 /C "cmd /c del @file"
+
+end-remove-UUlog
+
+		if {exists file ((parameter "GTS_HOME") & "\remove_uu_logfiles.bat")}
+			delete "{(parameter "GTS_HOME") & "\remove_uu_logfiles.bat"}"
+		endif
+        move __createfile "{(parameter "GTS_HOME") & "\remove_uu_logfiles.bat"}"
+        waithidden {pathname of system folder}\cmd.exe /q /c "{parameter "GTS_HOME"}\remove_uu_logfiles.bat"
+		delete "{(parameter "GTS_HOME") & "\remove_uu_logfiles.bat"}"
+	endif
+else
+	//No files are found for clean up
+	parameter "UUlogcleanup_Text002" = "UUlogCleanup: No files are found for cleanup"
+	if {name of operating system as lowercase does not start with "win"}
+		wait /bin/sh -c "echo {(parameter "UUlogcleanup_Text002")} >> {(parameter "UU_log")}"
+	else
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "UUlogcleanup_Text002")} >> "{(parameter "UU_log")}"
+	endif
+endif
+
+//********************************
+// SRM Data Transfer
+if {exists settings whose (name of it as lowercase = "srm_code") of client}
+
+//parameter "c_code"="{if(exists settings whose (name of it as lowercase = "c_code" AND exists values whose (length of (it as string) > 0) of it) of client)then(value of setting whose (name of it as lowercase = "c_code") of client)else("DED")}"
+//parameter "srm_code"="{if(exists settings whose (name of it as lowercase = "srm_code" AND exists values whose (length of (it as string) > 0) of it) of client)then(value of setting whose (name of it as lowercase = "srm_code") of client)else("")}"
+
+parameter "srm_folder"="{(parameter "GTS_HOME") & (if name of operating system as lowercase starts with "win" then "\SRM" else "/SRM")}"
+parameter "srm_folder_collect"="{(parameter "srm_folder") & (if name of operating system as lowercase starts with "win" then "\collect" else "/collect")}" 
+
+if {not exists folder (parameter "srm_folder")}
+    folder create "{parameter "srm_folder"}"
+endif
+
+if {not exists folder (parameter "srm_folder_collect")}	
+    folder create "{parameter "srm_folder_collect"}"
+endif
+
+if {name of operating system as lowercase starts with "win"}
+
+    parameter "srm_log"="{(parameter "srm_folder") & "\srm_collect.log"}"
+
+	// CHECK FOR SRM WINDOWS
+    if {exists key "HKLM\SYSTEM\CurrentControlSet\Services\srmservice" of registry}
+        parameter "srm_service_path"="{( if (it contains "%22") then (substring between "%22" of it) else it ) of ( value "ImagePath" of key "HKLM\SYSTEM\CurrentControlSet\Services\srmservice" of registry as string)}"
+        parameter "srm_report_path"="{(preceding text of last "\" of preceding text of last "\" of (parameter "srm_service_path")) & "\reports"}"
+		// log...
+		parameter "UU_log_Text002" = "Data: SRM Windows"
+		if {name of operating system as lowercase starts with "win"}
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "UU_log_Text002")} >> "{(parameter "UU_log")}"
+		else
+			wait /bin/sh -c "echo {(parameter "UU_log_Text002")} >> {(parameter "UU_log")}"
+		endif
+		// end log..
+		// ***********************************************
+		// --- Purge Routine for SRM log - Windows
+		// check if SRM Log file exists (this is the file that tells us what SRM files we uploaded already...
+		if {exists file ((parameter "srm_log"))}
+			// check it's age... see if > than 14 days
+			if {now - modification time of file (parameter "srm_log") > 14*day}
+				// purge.. and remake, but must include any files existing in the both SRM folder and the current log into the new log
+				// create temp file..
+				parameter "srm_log_tmp"="{(parameter "srm_folder") & "\srm_collect_tmp.log"}"
+				delete  "{(parameter "srm_log_tmp")}"
+				// create the script file to move data..
+				createfile until __purge-srm-log-win
+@echo off 
+   
+setlocal EnableDelayedExpansion 
+
+{preceding texts of firsts "\" of (parameter "srm_report_path")}
+cd "{parameter "srm_report_path"}"
+
+if exist "{parameter "srm_log"}" (
+	REM write out new tmp file..
+	echo {hostname} >> "{parameter "srm_log_tmp"}"
+	echo "{parameter "srm_log"}" >> "{parameter "srm_log_tmp"}"
+	echo "{parameter "srm_folder_collect"}" >> "{parameter "srm_log_tmp"}"
+	
+	for %%F in (*.gz) do ( 
+		REM echo %%F
+		findstr %%F "{parameter "srm_log"}" >nul 
+		if !ERRORLEVEL!==0 (
+			echo %%F >> "{parameter "srm_log_tmp"}"
+		) 
+	) 
+	del /F "{parameter "srm_log"}"
+	move /Y "{parameter "srm_log_tmp"}" "{parameter "srm_log"}"
+)
+
+:end
+__purge-srm-log-win
+				// execute it..
+				delete "{(parameter "srm_folder") & "\purgesrmlog.bat"}"
+				move __createfile "{(parameter "srm_folder") & "\purgesrmlog.bat"}"
+				waithidden {pathname of system folder}\cmd.exe /q /c "{parameter "srm_folder"}\purgesrmlog.bat"
+			endif
+		endif
+		// END: SRM Log Purge Windows.
+		// ***********************************************
+		
+		// create the script file to move data..
+        createfile until end-copysrm-win
+@echo on
+
+setlocal EnableDelayedExpansion
+
+{preceding texts of firsts "\" of (parameter "srm_folder_collect")}
+cd "{parameter "srm_folder_collect"}"
+
+for %%Z in (winall*.gz) do (
+    REM if not exist "{parameter "srm_report_path"}\%%Z" del /F %%Z
+	del /F %%Z
+)
+
+{preceding texts of firsts "\" of (parameter "srm_report_path")}
+cd "{parameter "srm_report_path"}"
+
+if exist "{parameter "srm_log"}" (
+	call:jdate tnow "%date%"
+    for %%F in (*.gz) do (
+        findstr %%F "{parameter "srm_log"}" >nul
+        if !ERRORLEVEL!==1 (
+			call:ftime tfile "%%F"
+    		set /a diff=tnow-tfile
+			if !diff! LSS 7 (
+				copy /b /y %%F "{parameter "srm_folder_collect"}"
+				{preceding texts of firsts "\" of (parameter "srm_folder_collect")}
+				cd "{parameter "srm_folder_collect"}"
+				copy /b /y %%F +,,
+			)
+			{preceding texts of firsts "\" of (parameter "srm_report_path")}
+			cd "{parameter "srm_report_path"}"
+	    )
+    )
+) else (
+    copy /b /y *.gz "{parameter "srm_folder_collect"}"
+	{preceding texts of firsts "\" of (parameter "srm_folder_collect")}
+    cd "{parameter "srm_folder_collect"}"
+	copy /b /y *.gz +,,
+	{preceding texts of firsts "\" of (parameter "srm_report_path")}
+    cd "{parameter "srm_report_path"}"
+)
+
+GOTO:end
+
+::-----------------------------------------------------------------------------------
+::-- Functions start below here
+::-----------------------------------------------------------------------------------
+
+:ftime JD filename attr -- returns the file time in julian days
+::                      -- JD    [out]    - valref file time in julian days
+::                      -- attr  [in,opt] - time field to be used, creation/last-access/last-write, see 'dir /?', i.e. /tc, /ta, /tw, default is /tw
+SETLOCAL
+set file=%~2
+set attr=%~3
+if not defined attr (call:jdate JD "- %~t2"
+) ELSE (for /f %%a in ('"dir %attr% /-c "%file%"|findstr "^^[0-9]""') do call:jdate JD "%%a")
+( ENDLOCAL & REM RETURN VALUES
+    IF "%~1" NEQ "" (SET %~1=%JD%) ELSE (echo.%JD%)
+)
+EXIT /b
+
+:jdate JD DateStr -- converts a date string to julian day number with respect to regional date format
+::                -- JD      [out,opt] - julian days
+::                -- DateStr [in,opt]  - date string, e.g. "03/31/2006" or "Fri 03/31/2006" or "31.3.2006"
+SETLOCAL
+set DateStr=%~2&if "%~2"=="" set DateStr=%date%
+for /f "skip=1 tokens=2-4 delims=(-)" %%a in ('"echo.|date"') do (
+    for /f "tokens=1-3 delims=/.- " %%A in ("%DateStr:* =%") do (
+        set %%a=%%A&set %%b=%%B&set %%c=%%C))
+set /a "yy=10000%yy% %%10000,mm=100%mm% %% 100,dd=100%dd% %% 100"
+set /a JD=dd-32075+1461*(yy+4800+(mm-14)/12)/4+367*(mm-2-(mm-14)/12*12)/12-3*((yy+4900+(mm-14)/12)/100)/4
+ENDLOCAL & IF "%~1" NEQ "" (SET %~1=%JD%) ELSE (echo.%JD%)
+EXIT /b
+
+:end
+
+end-copysrm-win
+
+        delete "{(parameter "srm_folder") & "\copysrm.bat"}"
+        move __createfile "{(parameter "srm_folder") & "\copysrm.bat"}"
+        waithidden {pathname of system folder}\cmd.exe /q /c "{parameter "srm_folder"}\copysrm.bat"
+
+    endif
+	
+	// CHECK FOR SRM VMWARE WINDOWS VCENTER
+    if {exists key "HKLM\SYSTEM\CurrentControlSet\Services\vmware3service" of registry}
+        parameter "srm_service_path_vm"="{( if (it contains "%22") then (substring between "%22" of it) else it ) of ( value "ImagePath" of key "HKLM\SYSTEM\CurrentControlSet\Services\vmware3service" of registry as string)}"
+        parameter "srm_report_path_vm"="{preceding text of last "\" of (parameter "srm_service_path_vm")}"
+		// log...
+		parameter "UU_log_Text003" = "Data: SRM VCenter Windows"
+		if {name of operating system as lowercase starts with "win"}
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "UU_log_Text003")} >> "{(parameter "UU_log")}"
+		else
+			wait /bin/sh -c "echo {(parameter "UU_log_Text003")} >> {(parameter "UU_log")}"
+		endif
+		// end log..
+		// ***********************************************
+		// --- Purge Routine for SRM log - Windows
+		// check if SRM Log file exists (this is the file that tells us what SRM files we uploaded already...
+		if {exists file ((parameter "srm_log"))}
+			// check it's age... see if > than 14 days
+			if {now - modification time of file (parameter "srm_log") > 14*day}
+				// purge.. and remake, but must include any files existing in the both SRM folder and the current log into the new log
+				// create temp file..
+				parameter "srm_log_tmp"="{(parameter "srm_folder") & "\srm_collect_tmp.log"}"
+				delete  "{(parameter "srm_log_tmp")}"
+				// create the script file to move data..
+				createfile until __purge-srm-log-winvm
+@echo off 
+   
+setlocal EnableDelayedExpansion 
+
+{preceding texts of firsts "\" of (parameter "srm_report_path_vm")}
+cd "{parameter "srm_report_path_vm"}"
+
+if exist "{parameter "srm_log"}" (
+	REM write out new tmp file..
+	echo {hostname} >> "{parameter "srm_log_tmp"}"
+	echo "{parameter "srm_log"}" >> "{parameter "srm_log_tmp"}"
+	echo "{parameter "srm_folder_collect"}" >> "{parameter "srm_log_tmp"}"
+	
+	for %%F in (*.gz) do ( 
+		REM echo %%F
+		findstr %%F "{parameter "srm_log"}" >nul 
+		if !ERRORLEVEL!==0 (
+			echo %%F >> "{parameter "srm_log_tmp"}"
+		) 
+	) 
+	del /F "{parameter "srm_log"}"
+	move /Y "{parameter "srm_log_tmp"}" "{parameter "srm_log"}"
+)
+
+:end
+__purge-srm-log-winvm
+				// execute it..
+				delete "{(parameter "srm_folder") & "\purgesrmlog.bat"}"
+				move __createfile "{(parameter "srm_folder") & "\purgesrmlog.bat"}"
+				waithidden {pathname of system folder}\cmd.exe /q /c "{parameter "srm_folder"}\purgesrmlog.bat"
+			endif
+		endif
+		// END: SRM Log Purge Windows.
+		// ***********************************************
+
+		// create the script file to move the SRM data..
+        createfile until end-copysrm-vcenter
+@echo off
+
+setlocal EnableDelayedExpansion
+
+{preceding texts of firsts "\" of (parameter "srm_folder_collect")}
+cd "{parameter "srm_folder_collect"}"
+
+for %%Z in (vc*.gz) do (
+    REM if not exist "{parameter "srm_report_path_vm"}\%%Z" del /F %%Z
+	del /F %%Z
+)
+
+{preceding texts of firsts "\" of (parameter "srm_report_path_vm")}
+cd "{parameter "srm_report_path_vm"}"
+
+if exist "{parameter "srm_log"}" (
+	call:jdate tnow "%date%"
+    for %%F in (*.gz) do (
+        findstr %%F "{parameter "srm_log"}" >nul
+        if !ERRORLEVEL!==1 (
+			call:ftime tfile "%%F"
+    		set /a diff=tnow-tfile
+			if !diff! LSS 7 (
+				copy /b /y %%F "{parameter "srm_folder_collect"}"
+				{preceding texts of firsts "\" of (parameter "srm_folder_collect")}
+				cd "{parameter "srm_folder_collect"}"
+				copy /b /y %%F +,,
+			)
+			{preceding texts of firsts "\" of (parameter "srm_report_path_vm")}
+            cd "{parameter "srm_report_path_vm"}"
+	    )
+    )
+) else (
+    copy /b /y *.gz "{parameter "srm_folder_collect"}"
+	{preceding texts of firsts "\" of (parameter "srm_folder_collect")}
+    cd "{parameter "srm_folder_collect"}"
+	copy /b /y *.gz +,,
+	{preceding texts of firsts "\" of (parameter "srm_report_path_vm")}
+    cd "{parameter "srm_report_path_vm"}"
+)
+
+GOTO:end
+
+::-----------------------------------------------------------------------------------
+::-- Functions start below here
+::-----------------------------------------------------------------------------------
+
+:ftime JD filename attr -- returns the file time in julian days
+::                      -- JD    [out]    - valref file time in julian days
+::                      -- attr  [in,opt] - time field to be used, creation/last-access/last-write, see 'dir /?', i.e. /tc, /ta, /tw, default is /tw
+SETLOCAL
+set file=%~2
+set attr=%~3
+if not defined attr (call:jdate JD "- %~t2"
+) ELSE (for /f %%a in ('"dir %attr% /-c "%file%"|findstr "^^[0-9]""') do call:jdate JD "%%a")
+( ENDLOCAL & REM RETURN VALUES
+    IF "%~1" NEQ "" (SET %~1=%JD%) ELSE (echo.%JD%)
+)
+EXIT /b
+
+:jdate JD DateStr -- converts a date string to julian day number with respect to regional date format
+::                -- JD      [out,opt] - julian days
+::                -- DateStr [in,opt]  - date string, e.g. "03/31/2006" or "Fri 03/31/2006" or "31.3.2006"
+SETLOCAL
+set DateStr=%~2&if "%~2"=="" set DateStr=%date%
+for /f "skip=1 tokens=2-4 delims=(-)" %%a in ('"echo.|date"') do (
+    for /f "tokens=1-3 delims=/.- " %%A in ("%DateStr:* =%") do (
+        set %%a=%%A&set %%b=%%B&set %%c=%%C))
+set /a "yy=10000%yy% %%10000,mm=100%mm% %% 100,dd=100%dd% %% 100"
+set /a JD=dd-32075+1461*(yy+4800+(mm-14)/12)/4+367*(mm-2-(mm-14)/12*12)/12-3*((yy+4900+(mm-14)/12)/100)/4
+ENDLOCAL & IF "%~1" NEQ "" (SET %~1=%JD%) ELSE (echo.%JD%)
+EXIT /b
+
+:end
+
+end-copysrm-vcenter
+
+        delete "{(parameter "srm_folder") & "\copysrm_vcenter.bat"}"
+        move __createfile "{(parameter "srm_folder") & "\copysrm_vcenter.bat"}"
+
+        waithidden {pathname of system folder}\cmd.exe /q /c "{parameter "srm_folder"}\copysrm_vcenter.bat"
+
+    endif
+
+else
+	// --- NIX
+	// CHECK FOR SRM UNIX
+    parameter "srm_log"="{(parameter "srm_folder") & "/srm_collect.log"}"
+
+    parameter "srm_install_path"="{if(exists file "/etc/inittab" whose (exists lines whose (it as string as lowercase starts with "srm:") of it))then(parenthesized parts of matches (case insensitive regex "^srm:[^:]+:[^:]+:(.*)/bin/verify.srm") of ((lines whose (it as string as lowercase starts with "srm:") of file "/etc/inittab") as string))else("/var/adm/perfmgr")}"
+    parameter "srm_report_path"="{(parameter "srm_install_path") & "/daily/" & hostname}"
+
+    if {exists folder (parameter "srm_report_path")}
+		// ***********************************************
+		// --- Purge Routine for SRM log - UNIX
+		// check if SRM Log file exists (this is the file that tells us what SRM files we uploaded already...
+		if {exists file ((parameter "srm_log"))}
+			// check it's age... see if > than 14 days
+			if {now - modification time of file (parameter "srm_log") > 14*day}
+				// purge.. and remake, but must include any files existing in the both SRM folder and the current log into the new log
+				// create temp file..
+				parameter "srm_log_tmp"="{(parameter "srm_folder") & "/srm_collect_tmp.log"}"
+				delete  "{(parameter "srm_log_tmp")}"
+				// create the script file to move data..
+				wait /bin/sh -c "cd {parameter "srm_report_path"} ; for f in *.gz; do grep $f {parameter "srm_log"} >/dev/null 2>&1 && echo $f >> {parameter "srm_log_tmp"}/; done"
+				wait /bin/sh -c "rm -f {parameter "srm_log"}"
+				wait /bin/sh -c "mv -f parameter "srm_log_tmp"} {parameter "srm_log"}"
+			endif
+		endif
+		// END: SRM Log Purge UNIX.
+		// ***********************************************
+		wait /bin/sh -c "cd {parameter "srm_folder_collect"} ; for f in *.gz; do rm -f $f ; done"
+		if {exists file ((parameter "srm_log"))}
+			wait /bin/sh -c "cd {parameter "srm_report_path"} ; for f in *.gz; do grep $f {parameter "srm_log"} >/dev/null 2>&1 || cp -p -f $f {parameter "srm_folder_collect"}/; done"
+		else 
+			wait /bin/sh -c "cd {parameter "srm_report_path"} ; for f in *.gz; do cp -p -f $f {parameter "srm_folder_collect"}/; done"
+		endif
+		// now, go into the srm collect folder and remove anything more than 7 days old..
+		wait /bin/sh -c "find {parameter "srm_folder_collect"}/*.gz -type f -mtime +7 -exec rm -f {{} \;"
+		// log...
+		parameter "UU_log_Text004" = "Data: SRM UNIX"
+		if {name of operating system as lowercase starts with "win"}
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "UU_log_Text004")} >> "{(parameter "UU_log")}"
+		else
+			wait /bin/sh -c "echo {(parameter "UU_log_Text004")} >> {(parameter "UU_log")}"
+		endif
+
+    endif
+
+endif
+endif
+// SRM Data Transfer - The End
+//********************************
+
+//********************************
+// GCMremote pre-processing
+parameter "GCMremote_log_Text001" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: GCMremote Clean up"
+parameter "GCMremote_log_Text002" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: GCMremote: Following files are deleted during clean up"
+parameter "GCMremote_log_Text003" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: GCMremote: No files are found during clean up"
+parameter "GCMremote_log_Text004" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: GCMremote: Following files are found for upload"
+parameter "GCMremote_log_Text005" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: GCMremote: No files are found for upload"
+
+// Create upload directory if not existing
+if {not exists folder (parameter "GCMR_HOME")}	
+    folder create "{parameter "GCMR_HOME"}"
+endif
+
+// Clean up (remove old GCMremote files from upload directory)MvdV Done
+if {exists ((find files "MHCviol*.zip" of folders (parameter "GCMR_HOME")) whose (now - modification time of it > 24 * hour))}
+	if {name of operating system as lowercase does not start with "win"}
+		// Process UNIX
+		//Logging the filenames which are deleted during clean up
+		wait /bin/sh -c "echo {(parameter "GCMremote_log_Text001")} >> {(parameter "UU_log")}"
+		wait /bin/sh -c "echo {(parameter "GCMremote_log_Text002")} >> {(parameter "UU_log")}"
+		wait /bin/sh -c "find {parameter "GCMR_HOME"}/ -name 'MHCviol*.zip' -type f -mtime +1 -exec ls -ls {{} \; >> {(parameter "UU_log")}"
+		
+		// Remove any old MHCviol*.zip files.  Find files that are older than 1 day, and rm ..note the escaped brackets.
+		wait /bin/sh -c "find {parameter "GCMR_HOME"}/ -name 'MHCviol*.zip' -type f -mtime +1 -exec rm -f {{} \;"
+	else
+		// Process WINDOWS		
+		//Logging the filenames which are deleted during clean up
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "GCMremote_log_Text001")} >> "{(parameter "UU_log")}"
+
+		// Remove older MHCviol*.zip files.  This needs to be done via batch script so we only delete files older than 1 day.
+		createfile until end-remove-MHCviol
+@echo off
+
+setlocal EnableDelayedExpansion
+
+{preceding texts of firsts "\" of (parameter "GCMR_HOME")}
+cd "{parameter "GCMR_HOME"}"
+
+echo "GCMremote: Following files will be removed during clean up" >> "{(parameter "UU_log")}"
+forfiles /P . /M MHCviol*.zip /D -1 /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+
+forfiles /P . /M MHCviol*.zip /D -1 /C "cmd /c del @file"
+
+end-remove-MHCviol
+
+		if {exists file ((parameter "GCMR_HOME") & "\remove_zip_files.bat")}
+			delete "{(parameter "GCMR_HOME") & "\remove_zip_files.bat"}"
+		endif
+        move __createfile "{(parameter "GCMR_HOME") & "\remove_zip_files.bat"}"
+        waithidden {pathname of system folder}\cmd.exe /q /c "{parameter "GCMR_HOME"}\remove_zip_files.bat"
+		delete "{(parameter "GCMR_HOME") & "\remove_zip_files.bat"}"
+	endif
+else
+	//No files are found for clean up
+	if {name of operating system as lowercase does not start with "win"}
+		wait /bin/sh -c "echo {(parameter "GCMremote_log_Text001")} >> {(parameter "UU_log")}"
+		wait /bin/sh -c "echo {(parameter "GCMremote_log_Text003")} >> {(parameter "UU_log")}"
+	else
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "GCMremote_log_Text001")} >> "{(parameter "UU_log")}"
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "GCMremote_log_Text003")} >> "{(parameter "UU_log")}"
+	endif
+endif
+
+// Check if there is something left to upload, if so make entry in log
+if {exists (find files "MHCviol*.zip" of folders ((parameter "GCMR_HOME")))} 
+	if {name of operating system as lowercase starts with "win"}
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "GCMremote_log_Text004")} >> "{(parameter "UU_log")}"
+		// Get the name of MHCviol*.zip files.  This needs to be done via batch script so we only get files older than 1 day.
+		createfile until end-get-MHCviol
+@echo off
+
+setlocal EnableDelayedExpansion
+
+{preceding texts of firsts "\" of (parameter "GCMR_HOME")}
+cd "{parameter "GCMR_HOME"}"
+
+forfiles /P . /M MHCviol*.zip /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+
+end-get-MHCviol
+
+		if {exists file ((parameter "GCMR_HOME") & "\get_zip_files.bat")}
+			delete "{(parameter "GCMR_HOME") & "\get_zip_files.bat"}"
+		endif
+        move __createfile "{(parameter "GCMR_HOME") & "\get_zip_files.bat"}"
+        waithidden {pathname of system folder}\cmd.exe /q /c "{parameter "GCMR_HOME"}\get_zip_files.bat"
+		delete "{(parameter "GCMR_HOME") & "\get_zip_files.bat"}"
+
+		//waithidden {pathname of system folder}\cmd.exe /q /c forfiles /P "{(parameter "GCMR_HOME")}" /M MHCviol*.zip /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+	else
+		wait /bin/sh -c "echo {(parameter "GCMremote_log_Text004")} >> {(parameter "UU_log")}"
+		wait /bin/sh -c "find {parameter "GCMR_HOME"}/ -name 'MHCviol*.zip' -type f -exec ls -ls {{} \; >> {(parameter "UU_log")}"
+	endif
+else
+	//No files found for upload
+	if {name of operating system as lowercase starts with "win"}
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "GCMremote_log_Text005")} >> "{(parameter "UU_log")}"
+	else
+		wait /bin/sh -c "echo {(parameter "GCMremote_log_Text005")} >> {(parameter "UU_log")}"
+	endif
+endif
+
+// End of GCMremote pre-processing
+//********************************
+
+//********************************
+// URT Clean up (remove old URT data files before uploading..)
+parameter "URT_log_Text001" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: URT Clean up"
+parameter "URT_log_Text002" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: URT: Following files are deleted during clean up"
+parameter "URT_log_Text003" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: URT: No files are found during clean up"
+parameter "URT_log_Text004" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: URT: Following files are found for upload"
+parameter "URT_log_Text005" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: URT: No files are found for upload"
+
+if {exists ((find files "*.mef3" of folders (parameter "URT_HOME")) whose (now - modification time of it > 24 * hour))}
+	if {name of operating system as lowercase does not start with "win"}
+		// Process UNIX
+		//Logging the filenames which are deleted during clean up
+		wait /bin/sh -c "echo {(parameter "URT_log_Text001")} >> {(parameter "UU_log")}"
+		wait /bin/sh -c "echo {(parameter "URT_log_Text002")} >> {(parameter "UU_log")}"
+		wait /bin/sh -c "find {parameter "URT_HOME"}/ -name '*.mef3' -type f -mtime +1 -exec ls -ls {{} \; >> {(parameter "UU_log")}"
+		
+		// Remove any old mef3 files.  Find files that are older than 1 day, and rm ..note the escaped brackets.
+		wait /bin/sh -c "find {parameter "URT_HOME"}/ -name '*.mef3' -type f -mtime +1 -exec rm -f {{} \;"
+	else
+		// Process WINDOWS
+		//Logging the filenames which are deleted during clean up
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "URT_log_Text001")} >> "{(parameter "UU_log")}"
+
+		// Remove older mef3 files.  This needs to be done via batch script so we only delete files older than 1 day.
+		createfile until end-remove-mef3
+@echo off
+
+setlocal EnableDelayedExpansion
+
+{preceding texts of firsts "\" of (parameter "URT_HOME")}
+cd "{parameter "URT_HOME"}"
+
+echo "URT: Following files will be removed during clean up" >> "{(parameter "UU_log")}"
+forfiles /P . /M *.mef3 /D -1 /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+
+forfiles /P . /M *.mef3 /D -1 /C "cmd /c del @file"
+
+end-remove-mef3
+
+		if {exists file ((parameter "URT_HOME") & "\remove_mef3_files.bat")}
+			delete "{(parameter "URT_HOME") & "\remove_mef3_files.bat"}"
+		endif
+        move __createfile "{(parameter "URT_HOME") & "\remove_mef3_files.bat"}"
+        waithidden {pathname of system folder}\cmd.exe /q /c "{parameter "URT_HOME"}\remove_mef3_files.bat"
+		delete "{(parameter "URT_HOME") & "\remove_mef3_files.bat"}"
+	endif
+else
+	//No files are found for clean up
+	if {name of operating system as lowercase starts with "win"}		
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "URT_log_Text001")} >> "{(parameter "UU_log")}"
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "URT_log_Text003")} >> "{(parameter "UU_log")}"
+	else
+		wait /bin/sh -c "echo {(parameter "URT_log_Text001")} >> {(parameter "UU_log")}"
+		wait /bin/sh -c "echo {(parameter "URT_log_Text003")} >> {(parameter "UU_log")}"
+	endif
+endif
+
+// now see if there are URT files hanging around...
+if {exists (find files "*.mef3" of folders (parameter "URT_HOME"))}
+	if {name of operating system as lowercase starts with "win"}
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "URT_log_Text004")} >> "{(parameter "UU_log")}"
+		// Get new mef3 files.  This needs to be done via batch script so we only delete files older than 1 day.
+		createfile until end-get-mef3
+@echo off
+
+setlocal EnableDelayedExpansion
+
+{preceding texts of firsts "\" of (parameter "URT_HOME")}
+cd "{parameter "URT_HOME"}"
+
+forfiles /P . /M *.mef3 /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+
+end-get-mef3
+
+		if {exists file ((parameter "URT_HOME") & "\get_mef3_files.bat")}
+			delete "{(parameter "URT_HOME") & "\get_mef3_files.bat"}"
+		endif
+        move __createfile "{(parameter "URT_HOME") & "\get_mef3_files.bat"}"
+        waithidden {pathname of system folder}\cmd.exe /q /c "{parameter "URT_HOME"}\get_mef3_files.bat"
+		delete "{(parameter "URT_HOME") & "\get_mef3_files.bat"}"
+		
+		//waithidden {pathname of system folder}\cmd.exe /q /c forfiles /P "{(parameter "URT_HOME")}" /M *.mef3 /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+	else
+		wait /bin/sh -c "echo {(parameter "URT_log_Text004")} >> {(parameter "UU_log")}"
+		wait /bin/sh -c "find {parameter "URT_HOME"}/ -name '*.mef3' -type f -exec ls -ls {{} \; >> {(parameter "UU_log")}"
+	endif
+else
+	//No files found for upload
+	if {name of operating system as lowercase starts with "win"}
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "URT_log_Text005")} >> "{(parameter "UU_log")}"
+	else
+		wait /bin/sh -c "echo {(parameter "URT_log_Text005")} >> {(parameter "UU_log")}"
+	endif
+endif
+
+// URT Clean up - The End
+//********************************
+
+//********************************
+// UIDEXT URT Clean up (remove old URT data files before uploading..)
+parameter "UIDEXT_log_Text001" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: UIDEXT Clean up"
+parameter "UIDEXT_log_Text002" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: UIDEXT: Following files are deleted during clean up"
+parameter "UIDEXT_log_Text003" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: UIDEXT: No files are found during clean up"
+parameter "UIDEXT_log_Text004" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: UIDEXT: Following files are found for upload"
+parameter "UIDEXT_log_Text005" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: UIDEXT: No files are found for upload"
+
+if {exists ((find files "*.zip" of folders ((parameter "UIDEXT_HOME") & "/RESULTS")) whose (now - modification time of it > 24 * hour))}
+	if {name of operating system as lowercase does not start with "win"}
+		// Process UNIX		
+		//Logging the filenames which are deleted during clean up
+		wait /bin/sh -c "echo {(parameter "UIDEXT_log_Text001")} >> {(parameter "UU_log")}"
+		wait /bin/sh -c "echo {(parameter "UIDEXT_log_Text002")} >> {(parameter "UU_log")}"
+		wait /bin/sh -c "find {parameter "UIDEXT_HOME"}/ -name '*.zip' -type f -mtime +1 -exec ls -ls {{} \; >> {(parameter "UU_log")}"
+		
+		// Remove any old zip files.  Find files that are older than 1 day, and rm ..note the escaped brackets.
+		wait /bin/sh -c "find {parameter "UIDEXT_HOME"}/ -name '*.zip' -type f -mtime +1 -exec rm -f {{} \;"
+	else
+		// Process WINDOWS
+		//Logging the filenames which are deleted during clean up
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "UIDEXT_log_Text001")} >> "{(parameter "UU_log")}"
+		
+		// Remove older zip files.  This needs to be done via batch script so we only delete files older than 1 day.
+		createfile until end-remove-zip
+@echo off
+
+setlocal EnableDelayedExpansion
+
+{preceding texts of firsts "\" of (parameter "UIDEXT_HOME")}
+cd "{parameter "UIDEXT_HOME"}"
+
+echo "UIDEXT: Following files will be removed during clean up" >> "{(parameter "UU_log")}"
+forfiles /P . /S /M *.zip /D -1 /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+
+forfiles /P . /S /M *.zip /D -1 /C "cmd /c del @file"
+
+end-remove-zip
+
+		if {exists file ((parameter "UIDEXT_HOME") & "\remove_zip_files.bat")}
+			delete "{(parameter "UIDEXT_HOME") & "\remove_zip_files.bat"}"
+		endif
+        move __createfile "{(parameter "UIDEXT_HOME") & "\remove_zip_files.bat"}"
+        waithidden {pathname of system folder}\cmd.exe /q /c "{parameter "UIDEXT_HOME"}\remove_zip_files.bat"
+		delete "{(parameter "UIDEXT_HOME") &  "\remove_zip_files.bat"}"
+	endif
+else
+	//No files are found for clean up
+	if {name of operating system as lowercase starts with "win"}		
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "UIDEXT_log_Text001")} >> "{(parameter "UU_log")}"
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "UIDEXT_log_Text003")} >> "{(parameter "UU_log")}"
+	else
+		wait /bin/sh -c "echo {(parameter "UIDEXT_log_Text001")} >> {(parameter "UU_log")}"
+		wait /bin/sh -c "echo {(parameter "UIDEXT_log_Text003")} >> {(parameter "UU_log")}"
+	endif
+endif
+
+// now see if there are URT files hanging around...
+if {exists (find files "*.zip" of folders ((parameter "UIDEXT_HOME")& "/RESULTS"))} 
+	// log...
+	if {name of operating system as lowercase starts with "win"}
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "UIDEXT_log_Text004")} >> "{(parameter "UU_log")}"
+		// Get the zip files.  This needs to be done via batch script so we only get the files which are not older than 1 day
+		createfile until end-get-zip
+@echo off
+
+setlocal EnableDelayedExpansion
+
+{preceding texts of firsts "\" of (parameter "UIDEXT_HOME")}
+cd "{parameter "UIDEXT_HOME"}"
+
+forfiles /P . /S /M *.zip /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+
+end-get-zip
+
+		if {exists file ((parameter "UIDEXT_HOME") & "\get_zip_files.bat")}
+			delete "{(parameter "UIDEXT_HOME") & "\get_zip_files.bat"}"
+		endif
+        move __createfile "{(parameter "UIDEXT_HOME") & "\get_zip_files.bat"}"
+        waithidden {pathname of system folder}\cmd.exe /q /c "{parameter "UIDEXT_HOME"}\get_zip_files.bat"
+		delete "{(parameter "UIDEXT_HOME") &  "\get_zip_files.bat"}"
+
+		//waithidden {pathname of system folder}\cmd.exe /q /c forfiles /P "{(parameter "UIDEXT_HOME")}" /S /M *.zip /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+	else
+		wait /bin/sh -c "echo {(parameter "UIDEXT_log_Text004")} >> {(parameter "UU_log")}"
+		wait /bin/sh -c "find {parameter "UIDEXT_HOME"}/ -name '*.zip' -type f -exec ls -ls {{} \; >> {(parameter "UU_log")}"
+	endif
+else
+	//No files are found for upload
+	if {name of operating system as lowercase starts with "win"}		
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "UIDEXT_log_Text005")} >> "{(parameter "UU_log")}"
+	else
+		wait /bin/sh -c "echo {(parameter "UIDEXT_log_Text005")} >> {(parameter "UU_log")}"
+	endif	
+endif
+
+// UIDEXT URT Clean up - The End
+//********************************
+
+//********************************
+// SAT Transport
+parameter "SAT_log_Text001" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: SAT Transport Clean up"
+parameter "SAT_log_Text002" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: SAT Transport: No files are found during clean up"
+parameter "SAT_log_Text003" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: SAT Transport: Following files are found for upload"
+parameter "SAT_log_Text004" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: SAT Transport: No files are found for upload"
+
+// Create upload directory if not existing
+if {not exists folder (parameter "SAT_HOME")}	
+    folder create "{parameter "SAT_HOME"}"
+endif
+
+if {name of operating system as lowercase starts with "win"}
+	waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SAT_log_Text001")} >> "{(parameter "UU_log")}"
+	if {exists key "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\IBM\SAT" of registry}
+        parameter "SAT_UAT"="{( if (it contains "%22") then (substring between "%22" of it) else it ) of ( value "TPCHCInstallPath" of key "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\IBM\SAT" of registry as string)}UniversalUploader\mef"
+		parameter "SAT_ECM"="{( if (it contains "%22") then (substring between "%22" of it) else it ) of ( value "TPCHCInstallPath" of key "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\IBM\SAT" of registry as string)}UniversalUploader\security"
+		
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SAT_UAT")} >> "{(parameter "UU_log")}"
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SAT_ECM")} >> "{(parameter "UU_log")}"
+		if {(exists folder (parameter "SAT_UAT")) or (exists folder (parameter "SAT_ECM"))}			
+			//Cleanup of files happens here
+			waithidden {pathname of system folder}\cmd.exe /q /c echo "SAT_UAT or SAT_ECM Folder exists" >> "{(parameter "UU_log")}"
+			if {(exists ((find files "*.zip" of folders (parameter "SAT_UAT")) whose (now - modification time of it > 24 * hour))) or (exists ((find files "*.zip" of folders (parameter "SAT_ECM")) whose (now - modification time of it > 24 * hour))) or (exists ((find files "*.gz" of folders (parameter "SAT_UAT")) whose (now - modification time of it > 24 * hour))) or (exists ((find files "*.gz" of folders (parameter "SAT_ECM")) whose (now - modification time of it > 24 * hour))) or (exists ((find files "*.csv" of folders (parameter "SAT_UAT")) whose (now - modification time of it > 24 * hour))) or (exists ((find files "*.csv" of folders (parameter "SAT_ECM")) whose (now - modification time of it > 24 * hour))) or (exists ((find files "ecm.control" of folders (parameter "SAT_ECM")) whose (now - modification time of it > 24 * hour)))}
+				// CLEAN UP: Remove older zip files.  This needs to be done via batch script so we only delete files older than 1 day.
+				createfile until end-remove-zipfiles
+@echo off 
+
+setlocal EnableDelayedExpansion
+
+{preceding texts of firsts "\" of (parameter "SAT_UAT")}
+cd "{parameter "SAT_UAT"}"
+
+echo "Following files will be removed during clean up in SAT_UAT folder" >> "{(parameter "UU_log")}"
+forfiles /P . /M *.zip /D -1 /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+forfiles /P . /M *.gz /D -1 /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+
+forfiles /P . /M *.zip /D -1 /C "cmd /c del @file"
+forfiles /P . /M *.gz /D -1 /C "cmd /c del @file"
+
+{preceding texts of firsts "\" of (parameter "SAT_ECM")}
+cd "{parameter "SAT_ECM"}"
+
+echo "Following files will be removed during clean up in SAT_ECM folder" >> "{(parameter "UU_log")}"
+forfiles /P . /M *.zip /D -1 /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+forfiles /P . /M *.gz /D -1 /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+forfiles /P . /M *.csv /D -1 /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+forfiles /P . /M ecm.control /D -1 /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+
+forfiles /P . /M *.zip /D -1 /C "cmd /c del @file"
+forfiles /P . /M *.gz /D -1 /C "cmd /c del @file"
+forfiles /P . /M *.csv /D -1 /C "cmd /c del @file"
+forfiles /P . /M ecm.control /D -1 /C "cmd /c del @file"
+
+end-remove-zipfiles
+
+				if {exists file ((parameter "SAT_HOME") & "\remove_zipfiles.bat")}
+					delete "{(parameter "SAT_HOME") & "\remove_zipfiles.bat"}"
+				endif
+				move __createfile "{(parameter "SAT_HOME") & "\remove_zipfiles.bat"}"
+				waithidden {pathname of system folder}\cmd.exe /q /c "{parameter "SAT_HOME"}\remove_zipfiles.bat"
+				delete "{(parameter "SAT_HOME") & "\remove_zipfiles.bat"}"
+			else
+				//No files are found for clean up
+				waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SAT_log_Text002")} >> "{(parameter "UU_log")}"
+			endif
+		
+			//Upload
+			if {(exists (find files "*.zip" of folders (parameter "SAT_UAT"))) or (exists (find files "*.zip" of folders (parameter "SAT_ECM"))) or (exists (find files "*.gz" of folders (parameter "SAT_UAT"))) or (exists (find files "*.gz" of folders (parameter "SAT_ECM"))) or (exists (find files "*.csv" of folders (parameter "SAT_ECM"))) or (exists (find files "ecm.control" of folders (parameter "SAT_ECM")))} 
+				// log...
+				waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SAT_log_Text003")} >> "{(parameter "UU_log")}"
+				// Get the latest zip files for upload.  This needs to be done via batch script so get files which are not older than 1 day.
+				createfile until end-get-zipfiles
+@echo off
+
+setlocal EnableDelayedExpansion
+
+{preceding texts of firsts "\" of (parameter "SAT_UAT")}
+cd "{parameter "SAT_UAT"}"
+
+forfiles /P . /M *.zip /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+forfiles /P . /M *.gz /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+
+{preceding texts of firsts "\" of (parameter "SAT_ECM")}
+cd "{parameter "SAT_ECM"}"
+
+forfiles /P . /M *.zip /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+forfiles /P . /M *.gz /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+forfiles /P . /M *.csv /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+forfiles /P . /M ecm.control /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+
+end-get-zipfiles
+
+				if {exists file ((parameter "SAT_HOME") & "\get_zipfiles.bat")}
+					delete "{(parameter "SAT_HOME") & "\get_zipfiles.bat"}"
+				endif
+				move __createfile "{(parameter "SAT_HOME") & "\get_zipfiles.bat"}"
+				waithidden {pathname of system folder}\cmd.exe /q /c "{parameter "SAT_HOME"}\get_zipfiles.bat"
+				delete "{(parameter "SAT_HOME") & "\get_zipfiles.bat"}"
+		
+				//waithidden {pathname of system folder}\cmd.exe /q /c forfiles /P "{(parameter "SAT_UAT")}" /S /M *.csv /C "cmd /c echo @file" >> "{(parameter "UU_log")}"
+		
+			else
+				//No files are found for upload		
+				waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SAT_log_Text004")} >> "{(parameter "UU_log")}"
+			endif
+		endif
+	endif
+endif
+// END: SAT Transport
+//********************************
+
+
+// Upload task settings
+
+parameter "FILE_PREFIX" = "{if exists ("CON"; "NUL"; "LPT1"; "LPT2"; "COM1"; "COM2"; "LPT1"; "LPT2"; "COM1"; "COM2"; "LPT1"; "LPT2"; "COM1"; "COM2"; "COM3"; "COM4"; "COM5"; "COM6"; "COM7"; "COM8"; "COM9"; "LPT1"; "LPT2"; "LPT3"; "LPT4"; "LPT5"; "LPT6"; "LPT7"; "LPT8"; "LPT9"; "AUX") whose (((if exists values whose (length of (it as string) > 0) of settings whose (name of it as lowercase = "hostnamespoof") of client then value of setting whose (name of it as lowercase = "hostnamespoof") of client else hostname) as lowercase) = it as lowercase) or exists (":";"*";"<";">";"\";"|";"?";"/"; ";";"%0a"; "%0b"; "%0c"; "%0d"; "%0e"; "%0f"; "%00"; "%01"; "%02"; "%03"; "%04"; "%05"; "%06"; "%07"; "%08"; "%09"; "%10"; "%11"; "%12"; "%13"; "%14"; "%15"; "%16"; "%17"; "%18"; "%1a"; "%1b"; "%1c"; "%1d";"%1e";"%1f";"%7f") whose ((if exists values whose (length of (it as string) > 0) of settings whose (name of it as lowercase = "hostnamespoof") of client then value of setting whose (name of it as lowercase = "hostnamespoof") of client else hostname) contains it) then (computer id as string) else if exists values whose (length of (it as string) > 0) of settings whose (name of it as lowercase = "hostnamespoof") of client then value of setting whose (name of it as lowercase = "hostnamespoof") of client else hostname}"
+parameter "HOST_NAME" = "{(if exists values whose (length of (it as string) > 0) of settings whose (name of it as lowercase = "hostnamespoof") of client then value of setting whose (name of it as lowercase = "hostnamespoof") of client else hostname)}"
+
+//CREATE DNSINFO FILE
+
+delete __appendfile
+
+appendfile {"COMPUTER ID"  & "%09%09%09" & "DNS NAME" & "%09%09%09" & "SPOOFED HOST NAME" &  "%09%09%09" & "CUSTOMER CODE" & "%09%09%09" & "SUBSTITUTION CODE"}
+appendfile {(Computer ID as string) & "%09%09%09" & (hostname) & "%09%09%09" & (if exists values whose (length of (it as string) > 0) of settings whose (name of it as lowercase = "hostnamespoof") of client then value of setting whose (name of it as lowercase = "hostnamespoof") of client else "N/A") & "%09%09%09" & (PARAMETER "c_code" as uppercase) & "%09%09%09" & ((if (exists ("CON"; "NUL"; "LPT1"; "LPT2"; "COM1"; "COM2"; "LPT1"; "LPT2"; "COM1"; "COM2"; "LPT1"; "LPT2"; "COM1"; "COM2"; "COM3"; "COM4"; "COM5"; "COM6"; "COM7"; "COM8"; "COM9"; "LPT1"; "LPT2"; "LPT3"; "LPT4"; "LPT5"; "LPT6"; "LPT7"; "LPT8"; "LPT9"; "AUX") whose (PARAMETER "HOST_NAME" as lowercase = it as lowercase)) or (exists (":";"*";"<";">";"\";"|";"?";"/"; ";";"%0a"; "%0b"; "%0c"; "%0d"; "%0e"; "%0f"; "%00"; "%01"; "%02"; "%03"; "%04"; "%05"; "%06"; "%07"; "%08"; "%09"; "%10"; "%11"; "%12"; "%13"; "%14"; "%15"; "%16"; "%17"; "%18"; "%1a"; "%1b"; "%1c"; "%1d";"%1e";"%1f";"%7f") whose (PARAMETER "HOST_NAME" contains it)) then 3 else if exists values whose (length of (it as string) > 0) of settings whose (name of it as lowercase = "hostnamespoof") of client then 2 else 0) as string)}
+
+if {not exists folder "dnsinfofiles" of parent folder of client}
+	if {name of operating system as lowercase starts with "win"}
+		dos mkdir "{pathname of parent folder of client}/dnsinfofiles"
+	else //unix & mac
+		wait mkdir "{pathname of parent folder of client}/dnsinfofiles"
+	endif //os
+endif //exists folder
+
+//have to add "if" because all relevance is evaluated before actionscript runs and will fail.
+if {exists folder "dnsinfofiles" of parent folder of client}
+	delete "{pathname of folder "dnsinfofiles" of parent folder of client}/{parameter "FILE_PREFIX"}.clientinfo"
+	move __appendfile "{pathname of folder "dnsinfofiles" of parent folder of client}/{parameter "FILE_PREFIX"}.clientinfo"
+	setting "_BESClient_ArchiveManager_FileSet-(CRAWLER)"="{pathname of folder "dnsinfofiles" of parent folder of client}/{parameter "FILE_PREFIX"}.clientinfo" on "{now}" for client
+endif
+
+//BACKUP
+appendfile {concatenation "%0a" of (name of it & "=" & value of it) of settings whose (name of it starts with "_BESClient_ArchiveManager_FileSet-") of client}
+if {exists folder "dnsinfofiles" of parent folder of client}
+	if {exists files "tmpsettings.txt" of folders "dnsinfofiles" of parent folder of client}
+		delete "{pathname of folder "dnsinfofiles" of parent folder of client}/tmpsettings.txt"
+	endif
+	move __appendfile "{pathname of folder "dnsinfofiles" of parent folder of client}/tmpsettings.txt"
+endif
+//END OF BACKUP
+
+//CHANGE SETTINGS
+
+setting "_BESClient_ArchiveManager_OperatingMode"="2" on "{now}" for client
+setting "_BESClient_ArchiveManager_MaxArchiveSize"="1000000000" on "{now}" for client
+setting "_BESClient_ArchiveManager_SendAll"="0" on "{now}" for client
+
+// END of SETTING MODIFICATION
+
+//****************************************************************************//
+//************  Set upload file sets here and remove at bottom ***************//
+//****************************************************************************//
+
+// RBkA
+if {name of operating system as lowercase starts with "win"}
+	if {(exists folder "Runbook" of parent folder of regapp "besclient.exe") AND (exists file "SCAReport.xml" of folder "Runbook" of parent folder of regapp "besclient.exe")}
+		setting "_BESClient_ArchiveManager_FileSet-(SCA)"="{pathname of file "SCAReport.xml" of folder "Runbook" of parent folder of regapp "besclient.exe"}" on "{now}" for client
+	endif
+endif
+
+if {name of operating system as lowercase starts with "win"}
+	if {(exists folder "Runbook" of parent folder of regapp "besclient.exe") AND (exists file "serveractivation.xml" of folder "Runbook" of parent folder of regapp "besclient.exe")}
+		setting "_BESClient_ArchiveManager_FileSet-(SAD)"="{pathname of file "serveractivation.xml" of folder "Runbook" of parent folder of regapp "besclient.exe"}" on "{now}" for client
+	endif
+endif
+
+// URT
+if {exists folder (parameter "URT_HOME")}
+	setting "_BESClient_ArchiveManager_FileSet-(URT)"="{parameter "URT_HOME"}/*.mef3" on "{now}" for client
+endif
+
+// Linux_SHC
+if {exists file "/root/SHC-OS-Etihad.sh"}
+	setting "_BESClient_ArchiveManager_FileSet-(LINSHC)"="{parameter "LINSHC_HOME"}/SHC-*.tar.gz" on "{now}" for client
+endif
+
+// Linux_AIX_SUDO
+if {exists folder (parameter "LINSHC_HOME")}
+	setting "_BESClient_ArchiveManager_FileSet-(SUDOSHC)"="{parameter "LINSHC_HOME"}/SUDO-SHC-*.tar.gz" on "{now}" for client
+endif
+
+// Linux_SSH
+if {exists folder (parameter "LINSHC_HOME")}
+	setting "_BESClient_ArchiveManager_FileSet-(SSHSHC)"="{parameter "LINSHC_HOME"}/SHC-SSH-CONFIG_*.txt" on "{now}" for client
+endif
+
+// UIDEXT (Global UID Extractors)
+if {exists folder (parameter "UIDEXT_HOME")}   
+    if {exists folder ((parameter "UIDEXT_HOME") & "/RESULTS")}
+        setting "_BESClient_ArchiveManager_FileSet-(UIDEXT)"="{parameter "UIDEXT_HOME"}/RESULTS/*.zip" on "{now}" for client
+    endif
+     
+    if {exists folder ((parameter "UIDEXT_HOME") & "/REM_RESULTS")}
+        setting "_BESClient_ArchiveManager_FileSet-(UIDREM)"="{parameter "UIDEXT_HOME"}/REM_RESULTS/*.zip" on "{now}" for client
+    endif
+endif
+
+// SSS
+if {exists folder (parameter "SSS_HOME")}
+	if {(exists files whose (name of it as lowercase ends with "_subs.all.sss") of folder (parameter "SSS_HOME"))}
+        setting "_BESClient_ArchiveManager_FileSet-(SSS)"="{parameter "SSS_HOME"}/*_subs.all.sss" on "{now}" for client
+    else
+        setting "_BESClient_ArchiveManager_FileSet-(SSS)"="{parameter "SSS_HOME"}/*.sss" on "{now}" for client
+	endif
+endif
+
+// GCM
+if {exists folder (parameter "GCM_HOME")}
+	if {name of operating system as lowercase starts with "win"}
+	    setting "_BESClient_ArchiveManager_FileSet-(GCM)"="{parameter "GCM_HOME"}/*gcmlog.zip" on "{now}" for client
+	else
+	    setting "_BESClient_ArchiveManager_FileSet-(GCM)"="{parameter "GCM_HOME"}/*gcmlog.tar.gz" on "{now}" for client
+    endif
+endif
+
+// SRM
+if {exists settings whose (name of it as lowercase = "srm_code") of client}
+if {exists folder (parameter "srm_folder_collect")}
+	setting "_BESClient_ArchiveManager_FileSet-({(parameter "c_code")&"_SRM"&((if(length of it > 0)then("_" & (it))else("")) of (parameter "srm_code"))})"="{parameter "srm_folder_collect"}" on "{now}" for client
+else
+	setting "_BESClient_ArchiveManager_FileSet-({(parameter "c_code")&"_SRM"&((if(length of it > 0)then("_" & (it))else("")) of (parameter "srm_code"))})"="" on "{now}" for client
+endif 
+endif
+
+// Logs
+if {exists folder (parameter "CLIENT_HOME")}
+	setting "_BESClient_ArchiveManager_FileSet-(CLOG)"="{parameter "CLIENT_HOME"}" on "{now}" for client
+endif
+
+if {exists folder (parameter "PROFILE_HOME")}
+	setting "_BESClient_ArchiveManager_FileSet-(PLOG)"="{parameter "PROFILE_HOME"}" on "{now}" for client
+endif
+
+// ESD / CDS Log file collection (addded 9/12/2013)
+if {exists folder (parameter "ESD_HOME")}
+	setting "_BESClient_ArchiveManager_FileSet-(ESD)"="{parameter "ESD_HOME"}" on "{now}" for client
+endif
+
+// Oracle License Scan
+if {exists folder (parameter "ORC_HOME")}
+	setting "_BESClient_ArchiveManager_FileSet-(ORC)"="{parameter "ORC_HOME"}/*.log" on "{now}" for client
+endif
+
+// HWSW Currency
+if {exists folder (parameter "HWSW_HOME")}
+    if {name of operating system as lowercase starts with "win"}
+	    setting "_BESClient_ArchiveManager_FileSet-(HWSW)"="{parameter "HWSW_HOME"}/*.zip" on "{now}" for client
+	else
+	    setting "_BESClient_ArchiveManager_FileSet-(HWSW)"="{parameter "HWSW_HOME"}/*.tgz" on "{now}" for client
+    endif
+endif
+
+// SAT 
+if {exists folder (parameter "SAT_HOME")}
+	setting "_BESClient_ArchiveManager_FileSet-(SAT)"="{parameter "SAT_HOME"}/*.zip" on "{now}" for client
+endif
+
+// GCMremote
+if {exists folder (parameter "GCMR_HOME")}
+	setting "_BESClient_ArchiveManager_FileSet-(GCMR)"="{parameter "GCMR_HOME"}/MHCviol*.zip" on "{now}" for client
+endif
+
+// SAT Transport
+if {name of operating system as lowercase starts with "win"}
+	if {exists key "HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\IBM\SAT" of registry}
+		if {exists folder (parameter "SAT_UAT")}
+			setting "_BESClient_ArchiveManager_FileSet-(SATUATZIP)"="{parameter "SAT_UAT"}/*.zip" on "{now}" for client
+			setting "_BESClient_ArchiveManager_FileSet-(SATUATGZ)"="{parameter "SAT_UAT"}/*.gz" on "{now}" for client			
+		endif
+		if {exists folder (parameter "SAT_ECM")}
+			setting "_BESClient_ArchiveManager_FileSet-(SATECMZIP)"="{parameter "SAT_ECM"}/*.zip" on "{now}" for client
+			setting "_BESClient_ArchiveManager_FileSet-(SATECMGZ)"="{parameter "SAT_ECM"}/*.gz" on "{now}" for client
+			setting "_BESClient_ArchiveManager_FileSet-(SATECMCSV)"="{parameter "SAT_ECM"}/*.csv" on "{now}" for client
+			setting "_BESClient_ArchiveManager_FileSet-(SATECMEC)"="{parameter "SAT_ECM"}/ecm.control" on "{now}" for client
+		endif	
+	endif
+endif
+
+// Upload
+archive now
+
+//CHANGE SETTINGS
+setting "_BESClient_ArchiveManager_OperatingMode"="0" on "{now}" for client
+// END OF CHANGE SETTINGS
+
+//**********************************************************//
+//********  Log the upload file sets here ******************//
+//**********************************************************//
+
+// RBkA - Only for Win
+if {name of operating system as lowercase starts with "win"}
+	if {(exists setting "_BESClient_ArchiveManager_FileSet-(SCA)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(SCA)" whose (exists value of it) of client)}
+		parameter "SCA_FS_DESC" = "SCA Fileset: Following files are chosen for upload"
+		parameter "SCA_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(SCA)" of client}"
+		if {parameter "SCA_FS" != ""}
+			parameter "SCA_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "SCA_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SCA_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "SCA_FS_WIN")}" >> "{(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+// SAD
+if {name of operating system as lowercase starts with "win"}
+	if {(exists setting "_BESClient_ArchiveManager_FileSet-(SAD)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(SAD)" whose (exists value of it) of client)}
+		parameter "SAD_FS_DESC" = "SAD Fileset: Following files are chosen for upload"
+		parameter "SAD_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(SAD)" of client}"
+		if {parameter "SAD_FS" != ""}
+			parameter "SAD_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "SAD_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SAD_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "SAD_FS_WIN")}" >> "{(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+// URT
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(URT)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(URT)" whose (exists value of it) of client)}
+	parameter "URT_FS_DESC" = "URT Fileset: Following files are chosen for upload"
+	parameter "URT_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(URT)" of client}"
+	if {parameter "URT_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "URT_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "URT_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "URT_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "URT_FS_WIN")}" >> "{(parameter "UU_log")}"
+		else
+			wait /bin/sh -c "echo {(parameter "URT_FS_DESC")} >> {(parameter "UU_log")}"
+			wait /bin/sh -c "echo {(parameter "URT_FS")} >> {(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+// SSS
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(SSS)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(SSS)" whose (exists value of it) of client)}
+	parameter "SSS_FS_DESC" = "SSS Fileset: Following files are chosen for upload"
+	parameter "SSS_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(SSS)" of client}"
+	if {parameter "SSS_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "SSS_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "SSS_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SSS_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "SSS_FS_WIN")}" >> "{(parameter "UU_log")}"
+		else
+			wait /bin/sh -c "echo {(parameter "SSS_FS_DESC")} >> {(parameter "UU_log")}"
+			wait /bin/sh -c "echo {(parameter "SSS_FS")} >> {(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+//SRM
+parameter "SRM_FS_DESC" = "SRM Fileset: Following files are chosen for upload"
+if {exists parameter "srm_log"}
+	if {name of operating system as lowercase starts with "win"}
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SRM_FS_DESC")} >> "{(parameter "UU_log")}"
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {concatenation ", " of names of files of folder (parameter "srm_folder_collect")} >> "{(parameter "UU_log")}"
+	else
+		wait /bin/sh -c "echo {(parameter "SRM_FS_DESC")} >> {(parameter "UU_log")}"
+		wait /bin/sh -c "echo {concatenation ", " of names of files of folder (parameter "srm_folder_collect")} >> {(parameter "UU_log")}"
+	endif
+endif
+
+// LOGS
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(CLOG)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(CLOG)" whose (exists value of it) of client)}
+	parameter "CLOG_FS_DESC" = "CLOG Fileset: Following files are chosen for upload"
+	parameter "CLOG_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(CLOG)" of client}"
+	if {parameter "CLOG_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "CLOG_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "CLOG_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "CLOG_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "CLOG_FS_WIN")}" >> "{(parameter "UU_log")}"
+		else
+			wait /bin/sh -c "echo {(parameter "CLOG_FS_DESC")} >> {(parameter "UU_log")}"
+			wait /bin/sh -c "find {(parameter "CLOG_FS")}/ -name '*' -type f -exec ls -ls {{} \; >> {(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(PLOG)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(PLOG)" whose (exists value of it) of client)}
+	parameter "PLOG_FS_DESC" = "PLOG Fileset: Following files are chosen for upload"
+	parameter "PLOG_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(PLOG)" of client}"
+	if {parameter "PLOG_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "PLOG_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "PLOG_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "PLOG_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "PLOG_FS_WIN")}" >> "{(parameter "UU_log")}"
+		else
+			wait /bin/sh -c "echo {(parameter "PLOG_FS_DESC")} >> {(parameter "UU_log")}"
+			wait /bin/sh -c "find {(parameter "PLOG_FS")}/ -name '*' -type f -exec ls -ls {{} \; >> {(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+// ESD / CDS Log file colleciton
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(ESD)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(ESD)" whose (exists value of it) of client)}
+	parameter "ESD_FS_DESC" = "ESD Fileset: Following files are chosen for upload"
+	parameter "ESD_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(ESD)" of client}"
+	if {parameter "ESD_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "ESD_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "ESD_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "ESD_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "ESD_FS_WIN")}" >> "{(parameter "UU_log")}"
+		else
+			wait /bin/sh -c "echo {(parameter "ESD_FS_DESC")} >> {(parameter "UU_log")}"
+			wait /bin/sh -c "find {(parameter "ESD_FS")}/ -name '*' -type f -exec ls -ls {{} \; >> {(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+// Oracle license scan..
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(ORC)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(ORC)" whose (exists value of it) of client)}
+	parameter "ORC_FS_DESC" = "ORC Fileset: Following files are chosen for upload"
+	parameter "ORC_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(ORC)" of client}"
+	if {parameter "ORC_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "ORC_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "ORC_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "ORC_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "ORC_FS_WIN")}" >> "{(parameter "UU_log")}"
+		else
+			wait /bin/sh -c "echo {(parameter "ORC_FS_DESC")} >> {(parameter "UU_log")}"
+			wait /bin/sh -c "echo {(parameter "ORC_FS")} >> {(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+// HWSW Currency
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(HWSW)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(HWSW)" whose (exists value of it) of client)}
+	parameter "HWSW_FS_DESC" = "HWSW Fileset: Following files are chosen for upload"
+	parameter "HWSW_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(HWSW)" of client}"
+	if {parameter "HWSW_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "HWSW_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "HWSW_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "HWSW_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "HWSW_FS_WIN")}" >> "{(parameter "UU_log")}"
+		else
+			wait /bin/sh -c "echo {(parameter "HWSW_FS_DESC")} >> {(parameter "UU_log")}"
+			wait /bin/sh -c "find {(parameter "HWSW_FS")}/ -name '*.tgz' -type f -exec ls -ls {{} \; >> {(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+// SAT
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(SAT)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(SAT)" whose (exists value of it) of client)}
+	parameter "SAT_FS_DESC" = "SAT Fileset: Following files are chosen for upload"
+	parameter "SAT_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(SAT)" of client}"
+	if {parameter "SAT_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "SAT_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "SAT_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SAT_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "SAT_FS_WIN")}" >> "{(parameter "UU_log")}"
+		else
+			wait /bin/sh -c "echo {(parameter "SAT_FS_DESC")} >> {(parameter "UU_log")}"
+			wait /bin/sh -c "echo {(parameter "SAT_FS")} >> {(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+// UIDEXT (Global UID Extractors)
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(UIDEXT)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(UIDEXT)" whose (exists value of it) of client)}
+    parameter "UIDEXT_FS_DESC" = "UIDEXT Fileset: Following files are chosen for upload"
+	parameter "UIDEXT_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(UIDEXT)" of client}"
+	if {parameter "UIDEXT_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "UIDEXT_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "UIDEXT_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "UIDEXT_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "UIDEXT_FS_WIN")}" >> "{(parameter "UU_log")}"
+		else
+			wait /bin/sh -c "echo {(parameter "UIDEXT_FS_DESC")} >> {(parameter "UU_log")}"
+			wait /bin/sh -c "echo {(parameter "UIDEXT_FS")} >> {(parameter "UU_log")}"
+		endif
+	endif
+endif
+     
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(UIDREM)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(UIDREM)" whose (exists value of it) of client)}
+    parameter "UIDREM_FS_DESC" = "UIDREM Fileset: Following files are chosen for upload"
+	parameter "UIDREM_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(UIDREM)" of client}"
+	if {parameter "UIDREM_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "UIDREM_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "UIDREM_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "UIDREM_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "UIDREM_FS_WIN")}" >> "{(parameter "UU_log")}"
+		else
+			wait /bin/sh -c "echo {(parameter "UIDREM_FS_DESC")} >> {(parameter "UU_log")}"
+			wait /bin/sh -c "echo {(parameter "UIDREM_FS")} >> {(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+// GCMR
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(GCMR)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(GCMR)" whose (exists value of it) of client)}
+    parameter "GCMR_FS_DESC" = "GCMR Fileset: Following files are chosen for upload"
+	parameter "GCMR_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(GCMR)" of client}"
+	if {parameter "GCMR_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "GCMR_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "GCMR_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "GCMR_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "GCMR_FS_WIN")}" >> "{(parameter "UU_log")}"
+		else
+			wait /bin/sh -c "echo {(parameter "GCMR_FS_DESC")} >> {(parameter "UU_log")}"
+			wait /bin/sh -c "echo {(parameter "GCMR_FS")} >> {(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+// SAT Transport - Applicable only for Win
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(SATUATZIP)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(SATUATZIP)" whose (exists value of it) of client)}
+	parameter "SATUATZIP_FS_DESC" = "SATUATZIP Fileset: Following files are chosen for upload"
+	parameter "SATUATZIP_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(SATUATZIP)" of client}"
+	if {parameter "SATUATZIP_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "SATUATZIP_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "SATUATZIP_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SATUATZIP_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "SATUATZIP_FS_WIN")}" >> "{(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(SATUATGZ)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(SATUATGZ)" whose (exists value of it) of client)}
+	parameter "SATUATGZ_FS_DESC" = "SATUATGZ Fileset: Following files are chosen for upload"
+	parameter "SATUATGZ_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(SATUATGZ)" of client}"
+	if {parameter "SATUATGZ_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "SATUATGZ_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "SATUATGZ_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SATUATGZ_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "SATUATGZ_FS_WIN")}" >> "{(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(SATECMZIP)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(SATECMZIP)" whose (exists value of it) of client)}
+	parameter "SATECMZIP_FS_DESC" = "SATECMZIP Fileset: Following files are chosen for upload"
+	parameter "SATECMZIP_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(SATECMZIP)" of client}"
+	if {parameter "SATECMZIP_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "SATECMZIP_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "SATECMZIP_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SATECMZIP_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "SATECMZIP_FS_WIN")}" >> "{(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(SATECMGZ)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(SATECMGZ)" whose (exists value of it) of client)}
+	parameter "SATECMGZ_FS_DESC" = "SATECMGZ Fileset: Following files are chosen for upload"
+	parameter "SATECMGZ_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(SATECMGZ)" of client}"
+	if {parameter "SATECMGZ_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "SATECMGZ_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "SATECMGZ_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SATECMGZ_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "SATECMGZ_FS_WIN")}" >> "{(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(SATECMCSV)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(SATECMCSV)" whose (exists value of it) of client)}
+	parameter "SATECMCSV_FS_DESC" = "SATECMCSV Fileset: Following files are chosen for upload"
+	parameter "SATECMCSV_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(SATECMCSV)" of client}"
+	if {parameter "SATECMCSV_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "SATECMCSV_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "SATECMCSV_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SATECMCSV_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "SATECMCSV_FS_WIN")}" >> "{(parameter "UU_log")}"
+		endif
+	endif
+endif
+
+if {(exists setting "_BESClient_ArchiveManager_FileSet-(SATECMEC)" of client) AND (exists setting "_BESClient_ArchiveManager_FileSet-(SATECMEC)" whose (exists value of it) of client)}
+	parameter "SATECMEC_FS_DESC" = "SATECMEC Fileset: Following files are chosen for upload"
+	parameter "SATECMEC_FS" = "{value of setting "_BESClient_ArchiveManager_FileSet-(SATECMEC)" of client}"
+	if {parameter "SATECMEC_FS" != ""}
+		if {name of operating system as lowercase starts with "win"}
+			parameter "SATECMEC_FS_WIN" = "{(concatenation "\" of substrings separated by "/" of parameter "SATECMEC_FS")}"
+			waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "SATECMEC_FS_DESC")} >> "{(parameter "UU_log")}"
+			waithidden {pathname of system folder}\cmd.exe /C dir /b "{(parameter "SATECMEC_FS_WIN")}" >> "{(parameter "UU_log")}"
+		endif
+	endif
+endif
+//*********************************************************
+//********  Remove upload file sets here ******************//
+//*********************************************************//
+
+// SRM
+// Everything has been executed, we can consider SRM files transferred. It will be used on next run.
+// NOTE: if this script doesn't intend to transfer SRM files, remove following if statement 
+if {exists parameter "srm_log"}
+	if {name of operating system as lowercase starts with "win"}
+		waithidden {pathname of system folder}\cmd.exe /q /c echo {concatenation ", " of names of files of folder (parameter "srm_folder_collect")} >> "{(parameter "srm_log")}"
+	else
+		wait /bin/sh -c "echo {concatenation ", " of names of files of folder (parameter "srm_folder_collect")} >> {(parameter "srm_log")}"
+	endif
+endif
+
+// UU log...
+parameter "UU_log_Text006" = "{((month of it as two digits & "/" & day_of_month of it as string & "/" & year of it as string) of dates (local time zone) of it, (time of times (local time zone) of it)) of (now)}: UU version {(parameter "UU_Version")} End"
+if {name of operating system as lowercase starts with "win"}
+	waithidden {pathname of system folder}\cmd.exe /q /c echo {(parameter "UU_log_Text006")} >> "{(parameter "UU_log")}"
+else
+	wait /bin/sh -c "echo {(parameter "UU_log_Text006")} >> {(parameter "UU_log")}"
+endif
+]]></ActionScript>
+					<SuccessCriteria Option="RunToCompletion"></SuccessCriteria>
+					<Relevance><![CDATA[if (operating system as string as lowercase does not start with "win") then version of client >= "8.2.1400" else true]]></Relevance>
+				</BaselineComponent>
+			</BaselineComponentGroup>
+		</BaselineComponentCollection>
+	</Baseline>
+</BES>

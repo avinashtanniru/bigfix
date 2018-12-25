@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<BES xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="BES.xsd">
+	<Fixlet>
+		<Title>Uninstall CEAgent</Title>
+		<Description><![CDATA[<DIV class=subsection>
+<P>This Fixlet will&nbsp;uninstall the CEAgent.</P>
+<P>&nbsp;</P>
+<P>Developed By : <STRONG>Venkata Avinash Tanniru</STRONG></P>
+<P>Email : <A href="mailto:t.avinash@in.ibm.com"><FONT color=#0066cc>t.avinash@in.ibm.com</FONT></A></P></DIV>]]></Description>
+		<Relevance><![CDATA[(version of client >= "6.0.0.0") AND (exists true whose (if true then (exists (operating system) whose (it as string as lowercase contains "Win" as lowercase)) else false))]]></Relevance>
+		<Relevance>exists service "CEAgent"</Relevance>
+		<Category></Category>
+		<Source>Internal</Source>
+		<SourceID></SourceID>
+		<SourceReleaseDate>2018-08-09</SourceReleaseDate>
+		<SourceSeverity></SourceSeverity>
+		<CVENames></CVENames>
+		<SANSID></SANSID>
+		<MIMEField>
+			<Name>x-fixlet-modification-time</Name>
+			<Value>Thu, 09 Aug 2018 14:56:57 +0000</Value>
+		</MIMEField>
+		<Domain>BESC</Domain>
+		<DefaultAction ID="Action1">
+			<Description>
+				<PreLink>Click </PreLink>
+				<Link>here</Link>
+				<PostLink> to deploy this action.</PostLink>
+			</Description>
+			<ActionScript MIMEType="application/x-Fixlet-Windows-Shell">// Enter your action script here
+delete __Download\uceagent.bat
+//Avinash Download the files
+prefetch uceagent.bat sha1:e898ddcfe7cd0d342865547e516f671540e1b542 size:756 https://goo.gl/uGxWWx
+
+wait __Download\uceagent.bat
+
+</ActionScript>
+		</DefaultAction>
+	</Fixlet>
+</BES>
